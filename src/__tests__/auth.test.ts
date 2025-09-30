@@ -1,23 +1,39 @@
 import { AuthService } from '../Domain/AuthService';
 import { UserRepository } from '../Infra/UserRepository';
 
+jest.mock('bcryptjs', () => ({
+  hash: jest.fn((password) => Promise.resolve(`hashed_${password}`)),
+  compare: jest.fn((password, hash) => Promise.resolve(password === 'password123'))
+}));
+
 describe('AuthService', () => {
   let authService: AuthService;
   let userRepository: UserRepository;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     userRepository = UserRepository.getInstance();
-    await userRepository.clearTestData(); // Limpa dados de testes anteriores
     authService = new AuthService(userRepository);
   });
 
   describe('register', () => {
-    it('should create a new user successfully', async () => {
+    it('Deve criar um novo usuário com sucesso', async () => {
       const userData = {
         username: 'testuser',
         email: 'test@example.com',
         password: 'password123'
       };
+
+      const mockUser = {
+        id: '123',
+        username: userData.username,
+        email: userData.email,
+        role: 'user',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      jest.spyOn(userRepository, 'findByUsername').mockResolvedValue(null);
+      jest.spyOn(userRepository, 'create').mockResolvedValue(mockUser as any);
 
       const result = await authService.register(userData);
 
@@ -27,28 +43,47 @@ describe('AuthService', () => {
       expect(result).not.toHaveProperty('password');
     });
 
-    it('should throw error if username already exists', async () => {
+    it('Deve lançar um erro se o username já existir', async () => {
       const userData = {
         username: 'testuser',
         email: 'test@example.com',
         password: 'password123'
       };
 
-      await authService.register(userData);
+      const existingUser = {
+        id: '123',
+        username: userData.username,
+        email: userData.email,
+        role: 'user',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      jest.spyOn(userRepository, 'findByUsername').mockResolvedValue(existingUser as any);
 
       await expect(authService.register(userData)).rejects.toThrow('Username já existe');
     });
   });
 
   describe('login', () => {
-    it('should login successfully with valid credentials', async () => {
+    it('Deve fazer login com sucesso com credenciais válidas', async () => {
       const userData = {
         username: 'testuser',
         email: 'test@example.com',
         password: 'password123'
       };
 
-      await authService.register(userData);
+      const mockUser = {
+        id: '123',
+        username: userData.username,
+        email: userData.email,
+        password: '$2a$10$hashedpassword', // Senha hasheada
+        role: 'user',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      jest.spyOn(userRepository, 'findByUsername').mockResolvedValue(mockUser as any);
 
       const result = await authService.login({
         username: 'testuser',
@@ -59,7 +94,9 @@ describe('AuthService', () => {
       expect(result.user.username).toBe('testuser');
     });
 
-    it('should throw error with invalid credentials', async () => {
+    it('Deve lançar um erro com credenciais inválidas', async () => {
+      jest.spyOn(userRepository, 'findByUsername').mockResolvedValue(null);
+
       await expect(authService.login({
         username: 'nonexistent',
         password: 'wrongpassword'

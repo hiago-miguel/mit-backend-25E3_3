@@ -15,5 +15,6 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   verbose: true,
-  testTimeout: 30000
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  testTimeout: 10000
 };

@@ -33,8 +33,8 @@ API Rest para RH!
 
 1. Clone o repositório:
 ```bash
-git clone https://github.com/hiago-miguel/mit-backend-25E3_2.git
-cd mit-backend-25E3_2
+git clone https://github.com/hiago-miguel/mit-backend-25E3_3.git
+cd mit-backend-25E3_3
 ```
 
 2. Instale as dependências:
@@ -59,7 +59,7 @@ MONGODB_URI=mongodb://localhost:27017/mit-backend
 
 ### Configuração do MongoDB
 
-#### Opção 1: Docker (Recomendado) 🐳
+#### Opção 1: Docker (Recomendado)
 ```bash
 # Iniciar MongoDB com Docker Compose
 npm run docker:up
@@ -67,10 +67,10 @@ npm run docker:up
 # Ver logs do MongoDB
 npm run docker:logs
 
-# Parar MongoDB
+# Parar MongoDB caso necessário
 npm run docker:down
 
-# Desenvolvimento completo (MongoDB + App)
+# Inicializar o MongoDB e MongoDB Express
 npm run dev:docker
 ```
 
@@ -78,19 +78,12 @@ npm run dev:docker
 1. Instale o MongoDB localmente
 2. Inicie o serviço MongoDB
 3. Use a URI padrão: `mongodb://localhost:27017/mit-backend`
-
-#### Opção 3: MongoDB Atlas (Cloud)
-1. Crie uma conta no [MongoDB Atlas](https://www.mongodb.com/atlas)
-2. Crie um cluster gratuito
-3. Obtenha a string de conexão
-4. Configure a variável `MONGODB_URI` no arquivo `.env`
-
 4. Execute o projeto:
 ```bash
 # Desenvolvimento
 npm run dev
 
-# Produção
+# Prod
 npm run build
 npm start
 ```
@@ -496,9 +489,8 @@ src/
 
 #### User Schema
 - **Campos**: username, email, password, role, timestamps
-- **Validações**: Validação de formato, unicidade, tamanho
-- **Índices**: username, email, role para performance
-- **Segurança**: Senha não retornada em consultas
+- **Validações**: Validação de formato, tamanho
+- **Índices**: username, email, role
 
 #### Employee Schema
 - **Campos**: fullName, jobRole, department, contact, timestamps
@@ -514,20 +506,13 @@ src/
 - **Update**: Atualização com validação
 - **Delete**: Exclusão com verificação de existência
 
-#### Funcionalidades Avançadas
+#### Funcionalidades
 - **Busca por departamento**: Filtro de empregados por departamento
 - **Busca por cargo**: Filtro de empregados por cargo
 - **Busca textual**: Busca full-text em nome, cargo e departamento
 - **Contagem**: Contadores para estatísticas
 - **Listas únicas**: Departamentos e cargos únicos
 
-### Inversão de Dependência
-
-A arquitetura mantém a inversão de dependência:
-- **Domain Layer**: Define interfaces e regras de negócio
-- **Infrastructure Layer**: Implementa repositórios com MongoDB
-- **Repository Pattern**: Isolamento da lógica de acesso a dados
-- **Dependency Injection**: Injeção de dependências nos serviços
 
 ## Validações de Dados
 
@@ -578,8 +563,8 @@ A API registra automaticamente:
 
 O projeto inclui um `docker-compose.yml` configurado com:
 
-- **MongoDB 7.0.4**: Banco de dados principal
-- **Mongo Express**: Um dashboard para gerenciar o MongoDB
+- **MongoDB 7.0.24**: Banco de dados principal
+- **Mongo Express v1.0.2**: Um dashboard para gerenciar o MongoDB
 - **Volumes persistentes**
 
 ### Enpoints

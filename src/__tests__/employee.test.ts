@@ -5,20 +5,28 @@ describe('EmployeeService', () => {
   let employeeService: EmployeeService;
   let employeeRepository: EmployeeRepository;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     employeeRepository = EmployeeRepository.getInstance();
-    await employeeRepository.clearTestData(); // Limpa dados de testes anteriores
     employeeService = new EmployeeService(employeeRepository);
   });
 
   describe('createEmployee', () => {
-    it('should create a new employee successfully', async () => {
+    it('Deve criar um novo empregado com sucesso', async () => {
       const employeeData = {
         fullName: 'Marcos Silva',
         jobRole: 'Desenvolvedor',
         department: 'TI',
         contact: 'marcos@example.com'
       };
+
+      const mockEmployee = {
+        id: '123',
+        ...employeeData,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      jest.spyOn(employeeRepository, 'create').mockResolvedValue(mockEmployee as any);
 
       const result = await employeeService.createEmployee(employeeData);
 
@@ -31,7 +39,7 @@ describe('EmployeeService', () => {
   });
 
   describe('getEmployeeById', () => {
-    it('should return employee by id', async () => {
+    it('Deve retornar o empregado pelo id', async () => {
       const employeeData = {
         fullName: 'Marcos Silva',
         jobRole: 'Desenvolvedor',
@@ -39,21 +47,31 @@ describe('EmployeeService', () => {
         contact: 'marcos@example.com'
       };
 
-      const created = await employeeService.createEmployee(employeeData);
-      const found = await employeeService.getEmployeeById(created.id);
+      const mockEmployee = {
+        id: '123',
+        ...employeeData,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      jest.spyOn(employeeRepository, 'findById').mockResolvedValue(mockEmployee as any);
+
+      const found = await employeeService.getEmployeeById('123');
 
       expect(found).toBeDefined();
-      expect(found?.id).toBe(created.id);
+      expect(found?.id).toBe('123');
     });
 
-    it('should return null for non-existent employee', async () => {
+    it('Deve retornar null para empregado inexistente', async () => {
+      jest.spyOn(employeeRepository, 'findById').mockResolvedValue(null);
+
       const result = await employeeService.getEmployeeById('nonexistent');
       expect(result).toBeNull();
     });
   });
 
   describe('updateEmployee', () => {
-    it('should update employee successfully', async () => {
+    it('Deve atualizar o empregado com sucesso', async () => {
       const employeeData = {
         fullName: 'Marcos Silva',
         jobRole: 'Desenvolvedor',
@@ -61,15 +79,31 @@ describe('EmployeeService', () => {
         contact: 'marcos@example.com'
       };
 
-      const created = await employeeService.createEmployee(employeeData);
-      const updated = await employeeService.updateEmployee(created.id, {
+      const mockEmployee = {
+        id: '123',
+        ...employeeData,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const updatedEmployee = {
+        ...mockEmployee,
+        fullName: 'Marcos Silva Santos'
+      };
+
+      jest.spyOn(employeeRepository, 'findById').mockResolvedValue(mockEmployee as any);
+      jest.spyOn(employeeRepository, 'update').mockResolvedValue(updatedEmployee as any);
+
+      const updated = await employeeService.updateEmployee('123', {
         fullName: 'Marcos Silva Santos'
       });
 
       expect(updated?.fullName).toBe('Marcos Silva Santos');
     });
 
-    it('should throw error for non-existent employee', async () => {
+    it('Deve lançar um erro para empregado inexistente', async () => {
+      jest.spyOn(employeeRepository, 'findById').mockResolvedValue(null);
+
       await expect(employeeService.updateEmployee('nonexistent', {
         fullName: 'New Name'
       })).rejects.toThrow('Empregado não encontrado');
@@ -77,21 +111,28 @@ describe('EmployeeService', () => {
   });
 
   describe('deleteEmployee', () => {
-    it('should delete employee successfully', async () => {
-      const employeeData = {
+    it('Deve deletar o empregado com sucesso', async () => {
+      const mockEmployee = {
+        id: '123',
         fullName: 'Marcos Silva',
         jobRole: 'Desenvolvedor',
         department: 'TI',
-        contact: 'marcos@example.com'
+        contact: 'marcos@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
 
-      const created = await employeeService.createEmployee(employeeData);
-      const result = await employeeService.deleteEmployee(created.id);
+      jest.spyOn(employeeRepository, 'findById').mockResolvedValue(mockEmployee as any);
+      jest.spyOn(employeeRepository, 'delete').mockResolvedValue(true);
+
+      const result = await employeeService.deleteEmployee('123');
 
       expect(result).toBe(true);
     });
 
-    it('should throw error for non-existent employee', async () => {
+    it('Deve lançar um erro para empregado inexistente', async () => {
+      jest.spyOn(employeeRepository, 'findById').mockResolvedValue(null);
+
       await expect(employeeService.deleteEmployee('nonexistent')).rejects.toThrow('Empregado não encontrado');
     });
   });
